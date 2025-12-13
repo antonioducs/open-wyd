@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"            # LocalStack Gateway
+      - "4510-4559:4510-4559"  # External services port range
+    environment:
+      - SERVICES=sqs
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "./localstack-init:/etc/localstack/init/ready.d"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  # LGTM Stack (Grafana, Loki, Tempo, Prometheus) - Simplified for dev
+  # For now, excluding full LGTM stack to keep it lightweight as requested "Local Cloud", but keeping placeholders or basic setup is good. 
+  # Starting with just the basics to avoid resource hogging, unless explicitly verified. 
+  # User asked for "Grafana, Loki, Tempo, Prometheus (LGTM Stack)". I should probably include a pre-configured image or individual services.
+  # Let's use a combined image or standard setup.
+  
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+      - loki
+      
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+      
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+      
+  tempo:
+    image: grafana/tempo:latest
+    ports:
+      - "3200:3200"
+
+volumes:
+  mongo-data:

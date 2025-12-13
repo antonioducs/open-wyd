@@ -1,0 +1,13 @@
+{
+    "name": "@repo/protocol",
+    "version": "0.0.0",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc"
+    },
+    "devDependencies": {
+        "@repo/tsconfig": "workspace:*",
+        "typescript": "^5.0.0"
+    }
+}

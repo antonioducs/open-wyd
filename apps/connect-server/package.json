@@ -1,0 +1,12 @@
+{
+    "name": "connect-server",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "echo 'Run dev'",
+        "build": "echo 'Run build'"
+    },
+    "devDependencies": {
+        "@repo/tsconfig": "workspace:*"
+    }
+}
