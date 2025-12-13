@@ -8,11 +8,13 @@
         "lint": "eslint \"src/**/*.ts*\""
     },
     "dependencies": {
+        "ioredis": "^5.8.2",
         "mongoose": "^8.0.0"
     },
     "devDependencies": {
         "@repo/tsconfig": "*",
-        "typescript": "^5.0.0",
-        "@types/node": "^20.0.0"
+        "@types/ioredis": "^4.28.10",
+        "@types/node": "^20.0.0",
+        "typescript": "^5.0.0"
     }
 }
