@@ -1,6 +1,6 @@
 export interface IPacketHeader {
-    size: number;
-    packetId: number;
+  size: number;
+  packetId: number;
 }
 
 // Usually WYD stores size in the first 2 bytes.

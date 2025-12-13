@@ -11,7 +11,7 @@ Unlike traditional emulators, this server **does not perform blocking database w
 ```mermaid
 graph TD
     Connect[Connect Server] -- "Clean Packets" --> GameLoop((Game Loop))
-    
+
     subgraph "In-Memory State (RAM)"
         GameLoop -- Updates --> Players[Player Entities]
         GameLoop -- Updates --> Mobs[Monster AI]

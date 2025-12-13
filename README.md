@@ -1,4 +1,3 @@
-
 # 🌍 OpenWYD Modern Emulator
 
 > **A Next-Gen, High-Performance MMORPG Emulator for "With Your Destiny" built with Node.js, TypeScript, and Serverless Architecture.**
@@ -16,10 +15,10 @@ graph TD
 
     %% Core Logic
     Connect -- "Clean Packets" --> Timer["⚔️ Timer Server"]
-    
+
     %% State & Locking
     Timer -- "Session Lock / PubSub" --> Redis[("Redis")]
-    
+
     %% Async Persistence
     Timer -- "Save Event (JSON)" --> SQS["AWS SQS (LocalStack)"]
     SQS --> Lambda["cloud_queue: Persistence Service"]
