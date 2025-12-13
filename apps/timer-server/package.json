@@ -7,11 +7,11 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@repo/queue": "workspace:*",
-        "@repo/protocol": "workspace:*"
+        "@repo/queue": "*",
+        "@repo/protocol": "*"
     },
     "devDependencies": {
-        "@repo/tsconfig": "workspace:*",
+        "@repo/tsconfig": "*",
         "typescript": "^5.0.0",
         "@types/node": "^20.0.0",
         "ts-node": "^10.0.0",

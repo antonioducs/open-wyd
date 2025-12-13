@@ -7,6 +7,6 @@
         "build": "echo 'Run build'"
     },
     "devDependencies": {
-        "@repo/tsconfig": "workspace:*"
+        "@repo/tsconfig": "*"
     }
 }

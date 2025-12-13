@@ -11,7 +11,7 @@
         "mongoose": "^8.0.0"
     },
     "devDependencies": {
-        "@repo/tsconfig": "workspace:*",
+        "@repo/tsconfig": "*",
         "typescript": "^5.0.0",
         "@types/node": "^20.0.0"
     }

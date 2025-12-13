@@ -7,12 +7,12 @@
         "deploy": "serverless deploy"
     },
     "dependencies": {
-        "@repo/database": "workspace:*",
-        "@repo/protocol": "workspace:*",
+        "@repo/database": "*",
+        "@repo/protocol": "*",
         "aws-lambda": "^1.0.7"
     },
     "devDependencies": {
-        "@repo/tsconfig": "workspace:*",
+        "@repo/tsconfig": "*",
         "serverless": "^3.0.0",
         "serverless-offline": "^13.0.0",
         "serverless-offline-sqs": "^8.0.0",
