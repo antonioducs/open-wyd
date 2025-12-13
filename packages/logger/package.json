@@ -1,0 +1,17 @@
+{
+    "name": "@repo/logger",
+    "version": "0.0.0",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsc"
+    },
+    "devDependencies": {
+        "@repo/tsconfig": "*",
+        "typescript": "^5.0.0",
+        "@types/node": "^20.0.0"
+    },
+    "dependencies": {
+        "pino": "^9.5.0"
+    }
+}
