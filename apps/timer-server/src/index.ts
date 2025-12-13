@@ -1,3 +1,4 @@
+import { env } from './env';
 import { sendToQueue } from '@repo/queue';
 import { GameEvent } from '@repo/protocol';
 
@@ -7,7 +8,8 @@ const startLoop = () => {
   console.log('Starting Timer Server Loop...');
 
   // Start gRPC Server
-  const rpcServer = new RpcServer();
+  const RPC_PORT = env.RPC_PORT;
+  const rpcServer = new RpcServer(RPC_PORT);
   rpcServer.start();
 
   // ... Rest of the loop

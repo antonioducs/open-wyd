@@ -1,4 +1,5 @@
 import { SQSEvent, SQSHandler, Context } from 'aws-lambda';
+import './env'; // Validate env vars
 import { connectToDatabase, PlayerModel } from '@repo/database';
 import { GameEvent } from '@repo/protocol';
 

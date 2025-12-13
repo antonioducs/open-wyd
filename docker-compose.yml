@@ -4,8 +4,8 @@ services:
   localstack:
     image: localstack/localstack
     ports:
-      - "4566:4566"            # LocalStack Gateway
-      - "4510-4559:4510-4559"  # External services port range
+      - "${LOCALSTACK_PORT:-4566}:4566" # LocalStack Gateway
+      - "4510-4559:4510-4559" # External services port range
     environment:
       - SERVICES=sqs
       - DEBUG=1
@@ -17,7 +17,7 @@ services:
   mongo:
     image: mongo:latest
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT:-27017}:27017"
     volumes:
       - mongo-data:/data/db
 
@@ -26,32 +26,32 @@ services:
   # Starting with just the basics to avoid resource hogging, unless explicitly verified. 
   # User asked for "Grafana, Loki, Tempo, Prometheus (LGTM Stack)". I should probably include a pre-configured image or individual services.
   # Let's use a combined image or standard setup.
-  
+
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "3000:3000"
+      - "${GRAFANA_PORT:-3000}:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - prometheus
       - loki
-      
+
   prometheus:
     image: prom/prometheus:latest
     ports:
-      - "9090:9090"
-      
+      - "${PROMETHEUS_PORT:-9090}:9090"
+
   loki:
     image: grafana/loki:latest
     ports:
-      - "3100:3100"
-      
+      - "${LOKI_PORT:-3100}:3100"
+
   tempo:
     image: grafana/tempo:latest
     ports:
-      - "3200:3200"
+      - "${TEMPO_PORT:-3200}:3200"
 
 volumes:
   mongo-data:

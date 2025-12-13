@@ -1,9 +1,10 @@
+import { env } from './env';
 import { TcpGateway } from './tcp/gateway';
 
 const startGateway = async () => {
   console.log('Starting Connect Server (Gateway)...');
 
-  const PORT = 3000; // Default port
+  const PORT = env.PORT;
   const gateway = new TcpGateway(PORT);
 
   // Graceful shutdown

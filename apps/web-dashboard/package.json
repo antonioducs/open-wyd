@@ -8,5 +8,8 @@
     },
     "devDependencies": {
         "@repo/tsconfig": "*"
+    },
+    "dependencies": {
+        "zod": "^4.1.13"
     }
 }

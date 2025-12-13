@@ -18,7 +18,7 @@ custom:
   serverless-offline-sqs:
     autoCreate: true                 # create the queue automatically
     apiVersion: '2012-11-05'
-    endpoint: http://0.0.0.0:4566    # LocalStack
+    endpoint: ${env:LOCALSTACK_ENDPOINT, 'http://0.0.0.0:4566'}    # LocalStack
     region: us-east-1
     accessKeyId: test
     secretAccessKey: test
