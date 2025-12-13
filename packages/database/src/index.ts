@@ -32,4 +32,8 @@ const PlayerSchema = new mongoose.Schema({
     updatedAt: Date
 });
 
-export const PlayerModel = mongoose.model('Player', PlayerSchema);
+export const PlayerModel = mongoose.models.Player || mongoose.model('Player', PlayerSchema);
+
+
+export * from './audit-log';
+

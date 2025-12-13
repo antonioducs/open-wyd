@@ -28,3 +28,24 @@ export const consumer: SQSHandler = async (event: SQSEvent, context: Context) =>
         throw error; // Let Lambda retry
     }
 };
+
+export const auditConsumer: SQSHandler = async (event: SQSEvent, context: Context) => {
+    context.callbackWaitsForEmptyEventLoop = false;
+
+    try {
+        const db = await connectToDatabase();
+        const { AuditLogModel } = await import('@repo/database'); // Dynamic import to ensure DB connection first? Or just standard import. Standard is fine.
+
+        const logs = event.Records.map(record => JSON.parse(record.body));
+
+        if (logs.length > 0) {
+            await AuditLogModel.insertMany(logs);
+            console.log(`Persisted ${logs.length} audit logs.`);
+        }
+
+    } catch (error) {
+        console.error('Error processing Audit batch:', error);
+        throw error;
+    }
+};
+

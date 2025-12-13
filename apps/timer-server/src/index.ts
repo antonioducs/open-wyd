@@ -20,6 +20,17 @@ const startLoop = () => {
         console.log(`[${counter}] Sending Save Event for ${event.payload.name}`);
         await sendToQueue(event);
 
+        // Random Audit Log
+        if (counter % 3 === 0) {
+            const { sendAuditLog } = await import('@repo/queue'); // ensuring we get the new export
+            await sendAuditLog({
+                actorId: event.payload.name,
+                action: 'GM_CMD',
+                details: { command: '/item 400 15' },
+                ipAddress: '127.0.0.1'
+            });
+        }
+
     }, 5000); // Send every 5 seconds
 };
 
