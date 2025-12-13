@@ -1,13 +1,4 @@
-export interface PlayerData {
-    name: string;
-    level: number;
-    exp: number;
-}
-
-export interface GameEvent {
-    type: 'SAVE_PLAYER';
-    payload: PlayerData;
-    timestamp: number;
-}
-
-export * from './gen/gateway';
+export * from './io/reader';
+export * from './io/writer';
+export * from './crypto/cipher';
+export * from './packets/header';
