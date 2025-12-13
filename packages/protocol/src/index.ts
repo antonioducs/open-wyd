@@ -9,3 +9,5 @@ export interface GameEvent {
     payload: PlayerData;
     timestamp: number;
 }
+
+export * from './gen/gateway';

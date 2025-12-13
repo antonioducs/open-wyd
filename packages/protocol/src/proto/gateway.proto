@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package gateway;
+
+enum EventType {
+  DATA = 0;
+  CONNECT = 1;
+  DISCONNECT = 2;
+}
+
+message PacketFrame {
+  string sessionId = 1;
+  bytes payload = 2;
+  EventType type = 3;
+}
+
+service GameLink {
+  rpc Stream (stream PacketFrame) returns (stream PacketFrame);
+}

@@ -7,14 +7,16 @@
         "build": "tsc"
     },
     "dependencies": {
-        "@repo/queue": "*",
-        "@repo/protocol": "*"
+        "@grpc/grpc-js": "^1.14.3",
+        "@grpc/proto-loader": "^0.8.0",
+        "@repo/protocol": "*",
+        "@repo/queue": "*"
     },
     "devDependencies": {
         "@repo/tsconfig": "*",
-        "typescript": "^5.0.0",
         "@types/node": "^20.0.0",
+        "nodemon": "^3.0.0",
         "ts-node": "^10.0.0",
-        "nodemon": "^3.0.0"
+        "typescript": "^5.0.0"
     }
 }

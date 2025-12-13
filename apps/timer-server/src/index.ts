@@ -1,8 +1,18 @@
 import { sendToQueue } from '@repo/queue';
 import { GameEvent } from '@repo/protocol';
 
+
+import { RpcServer } from './network/rpcServer';
+
 const startLoop = () => {
     console.log('Starting Timer Server Loop...');
+
+    // Start gRPC Server
+    const rpcServer = new RpcServer();
+    rpcServer.start();
+
+    // ... Rest of the loop
+
     let counter = 0;
 
     setInterval(async () => {
