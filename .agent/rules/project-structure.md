@@ -7,6 +7,7 @@ trigger: always_on
 You are an expert Senior Software Architect working on "OpenWYD", a modern, high-performance MMORPG emulator for "With Your Destiny" (WYD).
 
 ## 1. Tech Stack & Standards
+
 - **Runtime:** Node.js (Latest LTS).
 - **Language:** TypeScript (Strict Mode).
 - **Monorepo:** Turborepo + pnpm Workspaces.
@@ -15,6 +16,7 @@ You are an expert Senior Software Architect working on "OpenWYD", a modern, high
 - **Observability:** LGTM Stack (Loki, Grafana, Tempo, Prometheus) via `@repo/logger`.
 
 ## 2. Directory Structure & Responsibilities
+
 - **`/apps/connect-server` (TCP Gateway):**
   - Handles raw TCP sockets (net.Server).
   - **Responsibilities:** Packet Reassembly (Sticky Packets), Encryption (Legacy XOR), Rate Limiting (Token Bucket), Distributed Tracing initialization.
@@ -35,16 +37,19 @@ You are an expert Senior Software Architect working on "OpenWYD", a modern, high
 ## 3. Critical Architectural Rules
 
 ### A. Persistence Strategy (Write-Behind)
+
 - **Goal:** Zero-latency gameplay.
 - **Rule:** The Game Loop must never `await` a database operation.
 - **Flow:** Game Event -> Update RAM -> `sqsClient.send(payload)` -> Lambda Worker -> MongoDB.
 
 ### B. Inter-Server Communication
+
 - **Client <-> Connect:** TCP Raw (Encrypted).
 - **Connect <-> Timer:** gRPC Bidirectional Streaming (Multiplexing sessions).
 - **Timer <-> Timer:** Redis Pub/Sub (for Kicks and Global Broadcasts).
 
 ### C. Login & Security (Anti-Dupe)
+
 - **Strict Locking:** When User A logs into Server 2:
   1. Check Redis for existing session on Server 1.
   2. If exists: Set `lock:user:{id}`, Publish `KICK` command, Wait for confirmation (Polling).
@@ -54,11 +59,13 @@ You are an expert Senior Software Architect working on "OpenWYD", a modern, high
   - **Layer 2 (Global):** Redis Sliding Window for Login Brute-force.
 
 ### D. Coding Conventions
+
 - **Logs:** Always use `logger.info/error` from `@repo/logger`. Never `console.log`.
 - **Endianness:** Always use `readUInt*LE` / `writeUInt*LE`.
 - **Error Handling:** Never crash the server on packet error. Catch, log with TraceID, and disconnect the specific socket.
 
 ## 4. Environment Emulation
+
 - Development uses `docker-compose` to run:
   - MongoDB
   - Redis

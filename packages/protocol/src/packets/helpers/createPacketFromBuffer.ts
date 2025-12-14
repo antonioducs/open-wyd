@@ -3,7 +3,7 @@ import { IPackage } from '../ipackage';
 export const createPacketFromBuffer = (props: object, buffer: Buffer): any => {
   const populatedProps = {};
 
-  Object.entries(props).map(item => {
+  Object.entries(props).map((item) => {
     const value = item[1];
 
     if (value?.size) {

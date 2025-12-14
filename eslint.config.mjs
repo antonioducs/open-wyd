@@ -1,27 +1,12 @@
-import globals from "globals";
-import pluginJs from "@eslint/js";
-import tseslint from "typescript-eslint";
-import eslintConfigPrettier from "eslint-config-prettier";
-import eslintPluginPrettier from "eslint-plugin-prettier";
+import sharedConfig from "@repo/eslint-config";
 
-/** @type {import('eslint').Linter.Config[]} */
 export default [
-    { files: ["**/*.{js,mjs,cjs,ts}"] },
-    { languageOptions: { globals: globals.node } },
-    pluginJs.configs.recommended,
-    ...tseslint.configs.recommended,
-    eslintConfigPrettier,
+    ...sharedConfig,
     {
-        plugins: {
-            prettier: eslintPluginPrettier,
-        },
-        rules: {
-            "prettier/prettier": "error",
-            "@typescript-eslint/no-explicit-any": "warn",
-            "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
-        }
-    },
-    {
-        ignores: ["**/dist", "**/build", "**/node_modules", "**/.turbo", "**/coverage"]
+        ignores: ["apps/**", "packages/**", "**/node_modules", "**/.turbo", "**/dist", "**/coverage"]
+        // We ignore apps/packages/ here because they have their own lint tasks, 
+        // and we don't want root 'lint' to double-lint them if we run 'eslint .' from root context
+        // BUT 'turbo run lint' runs the scripts in workspaces.
+        // If we want 'eslint .' at root to ONLY lint root files, we ignore workspaces.
     }
 ];

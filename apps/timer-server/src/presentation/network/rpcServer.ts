@@ -54,9 +54,11 @@ export class RpcServer {
 
       const packetId = buffer.readUInt16LE(4);
 
-      logger.info(`[Packet] Received OpCode: 0x${packetId.toString(16).toUpperCase()} Size: ${buffer.length}`);
+      logger.info(
+        `[Packet] Received OpCode: 0x${packetId.toString(16).toUpperCase()} Size: ${buffer.length}`,
+      );
 
-      if (packetId === 0x20D) {
+      if (packetId === 0x20d) {
         // Handle Login
         handleLogin(
           frame.sessionId,
@@ -65,11 +67,11 @@ export class RpcServer {
             call.write({
               sessionId: frame.sessionId,
               type: EventType.DATA,
-              payload: responsePayload
+              payload: responsePayload,
             });
           },
           () => {
-            // Logic to disconnect user? 
+            // Logic to disconnect user?
             // Send DISCONNECT event back to Gateway or just let it expire?
             // Typically we send a request to Gateway to close socket.
             // For now, we can perhaps send a generic 'close' packet or just ignore.
@@ -80,9 +82,9 @@ export class RpcServer {
             call.write({
               sessionId: frame.sessionId,
               type: EventType.DISCONNECT,
-              payload: Buffer.alloc(0)
+              payload: Buffer.alloc(0),
             });
-          }
+          },
         );
       }
     }

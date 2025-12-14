@@ -8,7 +8,7 @@ const startGateway = async () => {
   const gateway = new TcpGateway(PORT);
 
   // Graceful shutdown
-  process.on('SIGSIGINT', () => {
+  process.on('SIGINT', () => {
     gateway.stop();
     process.exit(0);
   });

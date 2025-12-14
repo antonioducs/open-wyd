@@ -1,5 +1,5 @@
 export interface GameEvent {
-    type: string;
-    payload: any;
-    timestamp: number;
+  type: string;
+  payload: any;
+  timestamp: number;
 }

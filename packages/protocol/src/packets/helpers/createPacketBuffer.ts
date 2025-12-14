@@ -4,7 +4,7 @@ export const createPacketBuffer = (props: object) => {
   const buffer = Buffer.alloc(calcPacketSize(props));
 
   let currentByte = 0;
-  Object.entries(props).map(item => {
+  Object.entries(props).map((item) => {
     const value = item[1];
 
     if (value?.buffer instanceof Buffer) {

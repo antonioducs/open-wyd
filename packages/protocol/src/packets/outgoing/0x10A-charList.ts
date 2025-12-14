@@ -1,4 +1,3 @@
-
 export function writeCharListPacket() {
-    // TODO: implement this
+  // TODO: implement this
 }

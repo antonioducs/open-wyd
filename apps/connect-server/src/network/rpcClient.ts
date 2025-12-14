@@ -7,7 +7,10 @@ export class RpcClient {
   private stream: grpc.ClientDuplexStream<PacketFrame, PacketFrame> | null = null;
   private isConnected: boolean = false;
 
-  constructor(private targetAddress: string, private sessions: Map<string, ClientSession>) {
+  constructor(
+    private targetAddress: string,
+    private sessions: Map<string, ClientSession>,
+  ) {
     // Create the client instance using the generated service definition
     // Note: Generic client creation might vary based on generated code structure.
     // Since we mocked GameLinkService object, we use makeGenericClientConstructor or raw client.

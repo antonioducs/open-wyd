@@ -1,4 +1,3 @@
-/* eslint-disable */
 import * as grpc from '@grpc/grpc-js';
 
 export const protobufPackage = 'gateway';

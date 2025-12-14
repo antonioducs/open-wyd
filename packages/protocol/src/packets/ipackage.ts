@@ -1,4 +1,4 @@
-import { HeaderStruct } from "./header";
+import { HeaderStruct } from './header';
 
 export interface IPackage {
   size: number;

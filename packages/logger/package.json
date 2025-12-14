@@ -4,11 +4,14 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
+        "lint": "eslint .",
         "build": "tsc"
     },
     "devDependencies": {
+        "@repo/eslint-config": "*",
         "@repo/tsconfig": "*",
         "@types/node": "^20.0.0",
+        "eslint": "^9.39.2",
         "typescript": "^5.0.0"
     },
     "dependencies": {

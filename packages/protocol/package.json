@@ -4,12 +4,15 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
+        "lint": "eslint .",
         "build": "tsc",
         "generate": "node generate.js"
     },
     "devDependencies": {
+        "@repo/eslint-config": "*",
         "@repo/tsconfig": "*",
         "@types/google-protobuf": "^3.15.12",
+        "eslint": "^9.39.2",
         "grpc-tools": "^1.13.1",
         "ts-proto": "^2.8.3",
         "typescript": "^5.0.0"

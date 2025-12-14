@@ -6,8 +6,7 @@ import { LoginGuard } from '../security/loginGuard';
 import { RpcClient } from '../network/rpcClient';
 import { WydCipher } from '../security/cipher';
 
-
-const PACKET_LOGIN = 0x20D;
+const PACKET_LOGIN = 0x20d;
 
 export const CONNECTION_STATE = {
   connection: 'connection',
@@ -17,7 +16,6 @@ export const CONNECTION_STATE = {
   game: 'game',
 };
 
-
 export class ClientSession {
   private traceId: string;
 
@@ -25,7 +23,11 @@ export class ClientSession {
   private tokenBucket: TokenBucket;
   private state = CONNECTION_STATE.connection;
 
-  constructor(private sessionId: string, private socket: Socket, private rpcClient: RpcClient) {
+  constructor(
+    private sessionId: string,
+    private socket: Socket,
+    private rpcClient: RpcClient,
+  ) {
     this.traceId = sessionId;
     this.buffer = Buffer.alloc(0);
     this.tokenBucket = new TokenBucket(50, 10);
@@ -70,7 +72,10 @@ export class ClientSession {
 
   private async onPacket(packet: Buffer) {
     if (!this.tokenBucket.consume(1)) {
-      logger.warn({ sessionId: this.sessionId, ip: this.socket.remoteAddress }, 'Rate Limit Exceeded');
+      logger.warn(
+        { sessionId: this.sessionId, ip: this.socket.remoteAddress },
+        'Rate Limit Exceeded',
+      );
       IpBlacklist.getInstance().add(this.socket.remoteAddress || '', 300); // 5 mins
       this.socket.destroy();
       return;
@@ -78,9 +83,14 @@ export class ClientSession {
 
     const header = new HeaderStruct(packet);
 
-    logger.info({ sessionId: this.sessionId, size: packet.length, packetId: `0x${header.packetId.toString(16).toUpperCase()}` }, 'Packet Received');
-
-
+    logger.info(
+      {
+        sessionId: this.sessionId,
+        size: packet.length,
+        packetId: `0x${header.packetId.toString(16).toUpperCase()}`,
+      },
+      'Packet Received',
+    );
 
     // if (header.packetId === PACKET_LOGIN && this.socket.remoteAddress) {
     //   const canLogin = await LoginGuard.checkIp(this.socket.remoteAddress);
@@ -91,7 +101,6 @@ export class ClientSession {
     //     return;
     //   }
     // }
-
 
     this.rpcClient.sendPacket(this.sessionId, packet);
   }
