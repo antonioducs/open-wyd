@@ -45,8 +45,49 @@ export class RpcServer {
     call: grpc.ServerDuplexStream<PacketFrame, PacketFrame>,
     frame: PacketFrame,
   ) {
-    // Routing Logic to GameLoop would go here.
-    // For now, we just echo back or log.
+    // Basic Packet Routing
+    if (frame.type === EventType.DATA && frame.payload) {
+      const buffer = frame.payload;
+      if (buffer.length < 4) return; // Header size check
+
+      // Packet HeaderReader manual check (or use BinaryReader)
+      // Header: Size(2), Key(2), Checksum(2), PacketId(2) -> Offset 6
+      const packetId = buffer.readUInt16LE(6);
+
+      console.log(`[Packet] Received OpCode: 0x${packetId.toString(16).toUpperCase()} Size: ${buffer.length}`);
+
+      if (packetId === 0x20D) {
+        // Handle Login
+        import('../handlers/auth/loginHandler').then(({ handleLogin }) => {
+          handleLogin(
+            frame.sessionId,
+            buffer,
+            (responsePayload) => {
+              call.write({
+                sessionId: frame.sessionId,
+                type: EventType.DATA,
+                payload: responsePayload
+              });
+            },
+            () => {
+              // Logic to disconnect user? 
+              // Send DISCONNECT event back to Gateway or just let it expire?
+              // Typically we send a request to Gateway to close socket.
+              // For now, we can perhaps send a generic 'close' packet or just ignore.
+              // The Gateway handles the socket.
+              // We can send a Frame with type DISCONNECT to signal gateway?
+              // The Protocol definition probably expects specific control flow.
+              // Let's assume sending empty disconnect frame triggers it.
+              call.write({
+                sessionId: frame.sessionId,
+                type: EventType.DISCONNECT,
+                payload: Buffer.alloc(0)
+              });
+            }
+          );
+        });
+      }
+    }
 
     switch (frame.type) {
       case EventType.CONNECT:
@@ -56,17 +97,7 @@ export class RpcServer {
         console.log(`Client [${frame.sessionId}] Disconnected.`);
         break;
       case EventType.DATA:
-        console.log(`Received Data from [${frame.sessionId}]:`, frame.payload.toString());
-
-        // Echo back for testing
-        // In real implementation, this comes from GameLoop updates
-        if (frame.payload.toString().includes('PING')) {
-          call.write({
-            sessionId: frame.sessionId,
-            type: EventType.DATA,
-            payload: Buffer.from('PONG from TimerServer'),
-          });
-        }
+        // Already handled above
         break;
     }
   }

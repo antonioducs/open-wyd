@@ -52,6 +52,14 @@ export class BinaryWriter {
     this.offset += buffer.length;
   }
 
+  public writeHeader(size: number, type: number, encrypted: boolean = false): void {
+    this.writeUInt16(size); // 0-1 (Placeholder or actual)
+    this.writeUInt16(0);    // 2-3 Key (0)
+    this.writeUInt16(0);    // 4-5 Checksum (0)
+    this.writeUInt16(type); // 6-7 PacketID
+    this.writeUInt32(0);    // 8-11 Time/Unused
+  }
+
   public getBuffer(): Buffer {
     return this.buffer.subarray(0, this.offset);
   }

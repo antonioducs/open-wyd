@@ -1,3 +1,5 @@
+import { IPacketHeader } from './packet-interface';
+
 export class BinaryReader {
   private buffer: Buffer;
   private offset: number;
@@ -11,6 +13,20 @@ export class BinaryReader {
     const value = this.buffer.readUInt8(this.offset);
     this.offset += 1;
     return value;
+  }
+
+  public readHeader(): IPacketHeader {
+    // 12 byte header standard
+    const size = this.readUInt16();
+    const key = this.readUInt16(); // Unused here
+    const checksum = this.readUInt16(); // Checksum
+    const type = this.readUInt16();
+    const time = this.readUInt32(); // or Unused
+
+    return {
+      size,
+      type
+    };
   }
 
   public readUInt16(): number {

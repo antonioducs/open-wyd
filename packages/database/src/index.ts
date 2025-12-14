@@ -58,3 +58,5 @@ export const PlayerModel = mongoose.models.Player || mongoose.model('Player', Pl
 
 export * from './audit-log';
 export * from './session-manager';
+export * from './models/Account';
+export * from './repositories/AccountRepository';
