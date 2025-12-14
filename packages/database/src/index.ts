@@ -25,6 +25,28 @@ export const connectToDatabase = async () => {
   }
 };
 
+// Redis Client
+import Redis from 'ioredis';
+
+let cachedRedis: Redis | null = null;
+
+export const getRedisClient = () => {
+  if (cachedRedis) {
+    return cachedRedis;
+  }
+
+  const REDIS_URI = process.env.REDIS_URI || 'redis://localhost:6379';
+  console.log('Creating new Redis connection');
+
+  cachedRedis = new Redis(REDIS_URI);
+
+  cachedRedis.on('error', (err) => {
+    console.error('Redis error:', err);
+  });
+
+  return cachedRedis;
+};
+
 // Simple Schema Example
 const PlayerSchema = new mongoose.Schema({
   name: String,

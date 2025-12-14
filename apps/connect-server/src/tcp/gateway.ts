@@ -2,6 +2,7 @@ import * as net from 'net';
 import { randomUUID } from 'crypto';
 import { logger } from '@repo/logger';
 import { ClientSession } from './session';
+import { IpBlacklist } from '../security/tokenBucket';
 
 export class TcpGateway {
   private server: net.Server;
@@ -21,6 +22,12 @@ export class TcpGateway {
     const ip = socket.remoteAddress;
 
     logger.info({ sessionId, ip }, 'Client Connected');
+
+    if (ip && IpBlacklist.getInstance().isBlacklisted(ip)) {
+      logger.warn({ sessionId, ip }, 'Connection rejected: IP is blacklisted');
+      socket.destroy();
+      return;
+    }
 
     const session = new ClientSession(sessionId, socket);
     this.sessions.set(sessionId, session);

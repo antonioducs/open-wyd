@@ -1,6 +1,10 @@
 import { Socket } from 'net';
 import { logger } from '@repo/logger';
 import { WydCipher } from '@repo/protocol';
+import { TokenBucket, IpBlacklist } from '../security/tokenBucket';
+import { LoginGuard } from '../security/loginGuard';
+
+const PACKET_LOGIN = 0x20D;
 
 export class ClientSession {
   public sessionId: string;
@@ -8,12 +12,14 @@ export class ClientSession {
   public traceId: string; // Used for distributed tracing
 
   private buffer: Buffer;
+  private tokenBucket: TokenBucket;
 
   constructor(sessionId: string, socket: Socket) {
     this.sessionId = sessionId;
     this.socket = socket;
     this.traceId = sessionId; // Using sessionId as traceId for now
     this.buffer = Buffer.alloc(0);
+    this.tokenBucket = new TokenBucket(50, 10); // Capacity 50, 10 tokens/sec
 
     this.setupSocket();
   }
@@ -49,7 +55,15 @@ export class ClientSession {
     }
   }
 
-  private onPacket(packet: Buffer) {
+  private async onPacket(packet: Buffer) {
+    // 1. Rate Limiting Check
+    if (!this.tokenBucket.consume(1)) {
+      logger.warn({ sessionId: this.sessionId, ip: this.socket.remoteAddress }, 'Rate Limit Exceeded');
+      IpBlacklist.getInstance().add(this.socket.remoteAddress || '', 300); // 5 mins
+      this.socket.destroy();
+      return;
+    }
+
     logger.debug({ sessionId: this.sessionId, size: packet.length }, 'Packet Received');
     const cleanBuffer = WydCipher.decrypt(packet);
 
@@ -61,6 +75,21 @@ export class ClientSession {
       this.socket.destroy();
       return;
     }
+
+    // 2. Login Guard Check
+    if (cleanBuffer.length >= 4) {
+      const packetId = cleanBuffer.readUInt16LE(2);
+      if (packetId === PACKET_LOGIN && this.socket.remoteAddress) {
+        const canLogin = await LoginGuard.checkIp(this.socket.remoteAddress);
+        if (!canLogin) {
+          logger.warn({ sessionId: this.sessionId, ip: this.socket.remoteAddress }, 'Blocked by Login Guard');
+          // TODO: Send specific error packet before closing?
+          this.socket.destroy();
+          return;
+        }
+      }
+    }
+
     // TODO: Forward to gRPC handler
   }
 
