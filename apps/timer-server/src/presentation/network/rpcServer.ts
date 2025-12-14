@@ -50,11 +50,9 @@ export class RpcServer {
     // Basic Packet Routing
     if (frame.type === EventType.DATA && frame.payload) {
       const buffer = frame.payload;
-      if (buffer.length < 4) return; // Header size check
+      if (buffer.length < 4) return;
 
-      // Packet HeaderReader manual check (or use BinaryReader)
-      // Header: Size(2), Key(2), Checksum(2), PacketId(2) -> Offset 6
-      const packetId = buffer.readUInt16LE(6);
+      const packetId = buffer.readUInt16LE(4);
 
       logger.info(`[Packet] Received OpCode: 0x${packetId.toString(16).toUpperCase()} Size: ${buffer.length}`);
 

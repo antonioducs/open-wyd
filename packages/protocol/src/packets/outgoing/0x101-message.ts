@@ -1,13 +1,17 @@
-import { BinaryWriter } from '../../io/binary-writer';
+import { HeaderStruct } from "../header";
+import { calcPacketSize } from "../helpers/calcPackageSize";
+import { createPacketBuffer } from "../helpers/createPacketBuffer";
+import { CHAR } from "../primitivies";
 
 export function writeMessagePacket(message: string): Buffer {
-    const writer = new BinaryWriter();
+    const packet = {
+        header: new HeaderStruct(),
+        message: new CHAR(96),
+    };
 
-    // Header: Size(12 + 96) = 108, Type=0x101
-    writer.writeHeader(108, 0x101);
+    packet.header.packetId = 0x101;
+    packet.message.value = message;
+    packet.header.packetSize = calcPacketSize(packet);
 
-    // Message: char[96]
-    writer.writeString(message, 96);
-
-    return writer.getBuffer();
+    return createPacketBuffer(packet);
 }

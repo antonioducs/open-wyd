@@ -3,13 +3,18 @@ import { randomUUID } from 'crypto';
 import { logger } from '@repo/logger';
 import { ClientSession } from './session';
 import { IpBlacklist } from '../security/tokenBucket';
+import { RpcClient } from '../network/rpcClient';
+import { env } from '../env';
 
 export class TcpGateway {
   private server: net.Server;
   private sessions: Map<string, ClientSession>;
+  private rpcClient: RpcClient;
 
   constructor(port: number) {
     this.sessions = new Map();
+    this.rpcClient = new RpcClient(env.RPC_ADDRESS, this.sessions);
+    this.rpcClient.connect();
     this.server = net.createServer((socket) => this.onConnection(socket));
 
     this.server.listen(port, () => {
@@ -29,7 +34,7 @@ export class TcpGateway {
       return;
     }
 
-    const session = new ClientSession(sessionId, socket);
+    const session = new ClientSession(sessionId, socket, this.rpcClient);
     this.sessions.set(sessionId, session);
 
     socket.on('close', () => {

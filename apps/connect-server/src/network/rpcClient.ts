@@ -1,12 +1,13 @@
 import * as grpc from '@grpc/grpc-js';
 import { GameLinkService, GameLinkClient, PacketFrame, EventType } from '@repo/protocol';
-
+import { logger } from '@repo/logger';
+import { ClientSession } from '../tcp/session';
 export class RpcClient {
   private client: GameLinkClient;
   private stream: grpc.ClientDuplexStream<PacketFrame, PacketFrame> | null = null;
   private isConnected: boolean = false;
 
-  constructor(private targetAddress: string = 'localhost:50051') {
+  constructor(private targetAddress: string, private sessions: Map<string, ClientSession>) {
     // Create the client instance using the generated service definition
     // Note: Generic client creation might vary based on generated code structure.
     // Since we mocked GameLinkService object, we use makeGenericClientConstructor or raw client.
@@ -20,7 +21,7 @@ export class RpcClient {
   }
 
   public connect() {
-    console.log(`Connecting to Game Server at ${this.targetAddress}...`);
+    logger.info(`Connecting to Game Server at ${this.targetAddress}...`);
 
     // Start the bi-directional stream
     this.stream = this.client.stream();
@@ -30,23 +31,23 @@ export class RpcClient {
     });
 
     this.stream.on('end', () => {
-      console.log('Game Server Stream Ended.');
+      logger.info('Game Server Stream Ended.');
       this.isConnected = false;
       // Reconnect logic would go here
     });
 
     this.stream.on('error', (err) => {
-      console.error('Game Server Stream Error:', err);
+      logger.error({ error: err }, 'Game Server Stream Error');
       this.isConnected = false;
     });
 
     this.isConnected = true;
-    console.log('Connected to Game Server.');
+    logger.info('Connected to Game Server.');
   }
 
   public sendPacket(sessionId: string, payload: Buffer, type: EventType = EventType.DATA) {
     if (!this.stream || !this.isConnected) {
-      console.warn('Cannot send packet, Game Server not connected.');
+      logger.warn('Cannot send packet, Game Server not connected.');
       return;
     }
 
@@ -60,7 +61,14 @@ export class RpcClient {
   }
 
   private handleFrame(frame: PacketFrame) {
-    // This typically goes back to the TCP socket associated with frame.sessionId
-    console.log(`Received Frame from Logic for [${frame.sessionId}]`);
+    logger.info(`Received Frame from Logic for [${frame.sessionId}]`);
+
+    const session = this.sessions.get(frame.sessionId);
+    if (!session) {
+      logger.warn(`No session found for [${frame.sessionId}]`);
+      return;
+    }
+
+    session.send(frame.payload);
   }
 }

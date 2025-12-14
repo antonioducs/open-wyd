@@ -1,34 +1,18 @@
-import { BinaryReader } from '../../io/binary-reader';
-import { IPacketHeader } from '../../io/packet-interface';
+import { HeaderStruct } from "../header";
+import { createPacketFromBuffer } from "../helpers/createPacketFromBuffer";
+import { CHAR, WORD } from "../primitivies";
 
-export interface ILoginRequest {
-    header: IPacketHeader;
-    username: string;
-    password: string;
-}
-
-export function readLoginPacket(reader: BinaryReader): ILoginRequest {
-    const header = reader.readHeader();
-
-    // p20D structure:
-    // Header (12 bytes)
-    // Password: char[10]
-    // Unused: WORD (2 bytes)
-    // Username: char[12] -> Actually in many legacy sources p20D is:
-    // char Key[4];
-    // char Password[10]; or 12?
-    // Let's stick to the prompt Requirement: 
-    // Password: char[10]
-    // Unused: WORD (2 bytes)
-    // Username: char[12]
-
-    const password = reader.readString(10);
-    reader.skip(2); // Unused WORD
-    const username = reader.readString(12);
+export function readLoginPacket(buffer: Buffer) {
+    let receivedPacket = {
+        header: new HeaderStruct(),
+        password: new CHAR(10),
+        unk: new WORD(),
+        username: new CHAR(12),
+    };
+    receivedPacket = createPacketFromBuffer(receivedPacket, buffer);
 
     return {
-        header,
-        username,
-        password
+        username: receivedPacket.username.value,
+        password: receivedPacket.password.value
     };
 }

@@ -53,5 +53,13 @@ services:
     ports:
       - "${TEMPO_PORT:-3200}:3200"
 
+  redis:
+    image: redis:latest
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_USER=${REDIS_USER}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+
 volumes:
   mongo-data:

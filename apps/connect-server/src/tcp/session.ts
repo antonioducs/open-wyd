@@ -1,25 +1,34 @@
 import { Socket } from 'net';
 import { logger } from '@repo/logger';
-import { WydCipher } from '@repo/protocol';
+import { HeaderStruct } from '@repo/protocol';
 import { TokenBucket, IpBlacklist } from '../security/tokenBucket';
 import { LoginGuard } from '../security/loginGuard';
+import { RpcClient } from '../network/rpcClient';
+import { WydCipher } from '../security/cipher';
+
 
 const PACKET_LOGIN = 0x20D;
 
+export const CONNECTION_STATE = {
+  connection: 'connection',
+  login: 'login',
+  password: 'password',
+  characters: 'characters',
+  game: 'game',
+};
+
+
 export class ClientSession {
-  public sessionId: string;
-  public socket: Socket;
-  public traceId: string; // Used for distributed tracing
+  private traceId: string;
 
   private buffer: Buffer;
   private tokenBucket: TokenBucket;
+  private state = CONNECTION_STATE.connection;
 
-  constructor(sessionId: string, socket: Socket) {
-    this.sessionId = sessionId;
-    this.socket = socket;
-    this.traceId = sessionId; // Using sessionId as traceId for now
+  constructor(private sessionId: string, private socket: Socket, private rpcClient: RpcClient) {
+    this.traceId = sessionId;
     this.buffer = Buffer.alloc(0);
-    this.tokenBucket = new TokenBucket(50, 10); // Capacity 50, 10 tokens/sec
+    this.tokenBucket = new TokenBucket(50, 10);
 
     this.setupSocket();
   }
@@ -30,33 +39,36 @@ export class ClientSession {
     this.socket.on('close', () => this.onClose());
   }
 
-  private onData(chunk: Buffer) {
-    this.buffer = Buffer.concat([this.buffer, chunk]);
+  private onData(buffer: Buffer) {
+    if (this.state === CONNECTION_STATE.connection) {
+      if (buffer.length === 4 || buffer.length === 120) {
+        this.state = CONNECTION_STATE.login;
 
-    while (true) {
-      if (this.buffer.length < 2) {
-        break; // Not enough data for header
+        if (buffer.length === 120) {
+          this.onData(buffer.subarray(4));
+        }
+      } else {
+        this.socket.destroy();
+      }
+    } else {
+      const decryptBuffer = WydCipher.decrypt(buffer);
+
+      if (!decryptBuffer) {
+        this.socket.destroy();
+        return;
       }
 
-      const size = this.buffer.readUInt16LE(0);
-
-      // Check if we have the full packet (Header + Payload)
-      // Note: Depending on protocol, size might include header or not.
-      // Assuming standard WYD packet where size includes the header itself (2 bytes).
-      // If size < 2, it's invalid or empty.
-      if (this.buffer.length < size) {
-        break; // Wait for more data
+      const packageSize = decryptBuffer.readUInt16LE(0);
+      if (packageSize !== decryptBuffer.length) {
+        this.socket.destroy();
+        return;
       }
 
-      const packet = this.buffer.subarray(0, size);
-      this.buffer = this.buffer.subarray(size);
-
-      this.onPacket(packet);
+      this.onPacket(decryptBuffer);
     }
   }
 
   private async onPacket(packet: Buffer) {
-    // 1. Rate Limiting Check
     if (!this.tokenBucket.consume(1)) {
       logger.warn({ sessionId: this.sessionId, ip: this.socket.remoteAddress }, 'Rate Limit Exceeded');
       IpBlacklist.getInstance().add(this.socket.remoteAddress || '', 300); // 5 mins
@@ -64,33 +76,24 @@ export class ClientSession {
       return;
     }
 
-    logger.debug({ sessionId: this.sessionId, size: packet.length }, 'Packet Received');
-    const cleanBuffer = WydCipher.decrypt(packet);
+    const header = new HeaderStruct(packet);
 
-    if (!cleanBuffer) {
-      logger.warn(
-        { sessionId: this.sessionId },
-        'Invalid packet checksum. Possible attack or corrupted packet.',
-      );
-      this.socket.destroy();
-      return;
-    }
+    logger.info({ sessionId: this.sessionId, size: packet.length, packetId: `0x${header.packetId.toString(16).toUpperCase()}` }, 'Packet Received');
 
-    // 2. Login Guard Check
-    if (cleanBuffer.length >= 4) {
-      const packetId = cleanBuffer.readUInt16LE(2);
-      if (packetId === PACKET_LOGIN && this.socket.remoteAddress) {
-        const canLogin = await LoginGuard.checkIp(this.socket.remoteAddress);
-        if (!canLogin) {
-          logger.warn({ sessionId: this.sessionId, ip: this.socket.remoteAddress }, 'Blocked by Login Guard');
-          // TODO: Send specific error packet before closing?
-          this.socket.destroy();
-          return;
-        }
-      }
-    }
 
-    // TODO: Forward to gRPC handler
+
+    // if (header.packetId === PACKET_LOGIN && this.socket.remoteAddress) {
+    //   const canLogin = await LoginGuard.checkIp(this.socket.remoteAddress);
+    //   if (!canLogin) {
+    //     logger.warn({ sessionId: this.sessionId, ip: this.socket.remoteAddress }, 'Blocked by Login Guard');
+    //     // TODO: Send specific error packet before closing?
+    //     this.socket.destroy();
+    //     return;
+    //   }
+    // }
+
+
+    this.rpcClient.sendPacket(this.sessionId, packet);
   }
 
   private onError(err: Error) {

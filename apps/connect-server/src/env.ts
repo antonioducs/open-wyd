@@ -2,7 +2,8 @@ import 'dotenv/config';
 import { z } from 'zod';
 
 const envSchema = z.object({
-    PORT: z.coerce.number().min(1).default(3000),
+    PORT: z.coerce.number().min(1),
+    RPC_ADDRESS: z.string(),
 });
 
 const _env = envSchema.safeParse(process.env);
