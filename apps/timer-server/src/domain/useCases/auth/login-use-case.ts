@@ -6,6 +6,7 @@ import {
     writeItem,
     writeStatus
 } from '@repo/protocol';
+import { logger } from '@repo/logger';
 import { AccountRepository, getRedisClient } from '@repo/database';
 
 export const handleLogin = async (
@@ -21,7 +22,7 @@ export const handleLogin = async (
         const loginData = readLoginPacket(reader);
         const { username, password } = loginData;
 
-        console.log(`[Login] Request for ${username} (Session: ${sessionId})`);
+        logger.info(`[Login] Request for ${username} (Session: ${sessionId})`);
 
         // 1. Rate Limit
         // Simple key-based rate limit
@@ -38,7 +39,7 @@ export const handleLogin = async (
         // 2. Auth
         const account = await AccountRepository.authenticate(username, password);
         if (!account) {
-            console.log(`[Login] Failed auth for ${username}`);
+            logger.info(`[Login] Failed auth for ${username}`);
             sendPacket(writeMessagePacket("Invalid username or password."));
             disconnect();
             return;
@@ -54,7 +55,7 @@ export const handleLogin = async (
         const sessionKey = `session:${account._id}`;
         const existingSession = await redis.get(sessionKey);
         if (existingSession) {
-            console.log(`[Login] Account ${username} already logged in.`);
+            logger.info(`[Login] Account ${username} already logged in.`);
             // Notify existing session to kick (Pub/Sub) - TODO
             // For now, reject logic
             sendPacket(writeMessagePacket("Account already connected."));
@@ -67,7 +68,7 @@ export const handleLogin = async (
         }
 
         // 4. Success
-        console.log(`[Login] Success for ${username}. Sending CharList.`);
+        logger.info(`[Login] Success for ${username}. Sending CharList.`);
 
         // Register Session
         await redis.set(sessionKey, sessionId, 'EX', 300); // 5 min TTL for now, refreshed by heartbeat
@@ -98,7 +99,7 @@ export const handleLogin = async (
         sendPacket(response);
 
     } catch (error) {
-        console.error('[Login] Error processing packet:', error);
+        logger.error({ error }, '[Login] Error processing packet:');
         sendPacket(writeMessagePacket("Server Error during login."));
         disconnect();
     }

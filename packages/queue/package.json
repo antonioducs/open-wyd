@@ -8,11 +8,13 @@
         "lint": "eslint \"src/**/*.ts*\""
     },
     "dependencies": {
-        "@aws-sdk/client-sqs": "^3.0.0"
+        "@repo/logger": "*",
+        "@aws-sdk/client-sqs": "^3.0.0",
+        "zod": "^4.1.13"
     },
     "devDependencies": {
         "@repo/tsconfig": "*",
-        "typescript": "^5.0.0",
-        "@types/node": "^20.0.0"
+        "@types/node": "^20.0.0",
+        "typescript": "^5.0.0"
     }
 }

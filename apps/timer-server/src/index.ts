@@ -1,8 +1,8 @@
-import { env } from './env';
-import { sendToQueue } from '@repo/queue';
+import { env } from './constants/env';
+import { QueueRepositorySingleton } from './presentation/singletons/queue-repository-singleton';
 import { GameEvent } from '@repo/protocol';
 
-import { RpcServer } from './network/rpcServer';
+import { RpcServer } from './presentation/network/rpcServer';
 
 const startLoop = () => {
   console.log('Starting Timer Server Loop...');
@@ -29,18 +29,7 @@ const startLoop = () => {
     };
 
     console.log(`[${counter}] Sending Save Event for ${event.payload.name}`);
-    await sendToQueue(event);
-
-    // Random Audit Log
-    if (counter % 3 === 0) {
-      const { sendAuditLog } = await import('@repo/queue'); // ensuring we get the new export
-      await sendAuditLog({
-        actorId: event.payload.name,
-        action: 'GM_CMD',
-        details: { command: '/item 400 15' },
-        ipAddress: '127.0.0.1',
-      });
-    }
+    QueueRepositorySingleton.getInstance().gameEvents(event);
   }, 5000); // Send every 5 seconds
 };
 
